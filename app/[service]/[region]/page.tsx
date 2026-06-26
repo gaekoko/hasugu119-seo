@@ -29,8 +29,57 @@ function pickSymptomPhrase(region: string, phrases: string[]) {
   return phrases[(idx >= 0 ? idx : 0) % phrases.length];
 }
 
+// 지역마다 다른 조합이 나오도록, 각 콘텐츠 블록을 서로 다른 오프셋/배수로 로테이션
+function pickVariant<T>(pool: T[] | undefined, fallback: T, regionIndex: number, multiplier: number, offset: number): T {
+  if (!pool || pool.length === 0) return fallback;
+  const idx = (regionIndex * multiplier + offset) % pool.length;
+  return pool[idx];
+}
+
+function rotateFaqs(pool: { q: string; a: string }[], regionIndex: number) {
+  const n = pool.length;
+  if (n === 0) return [];
+  const start = regionIndex % n;
+  const picked: { q: string; a: string }[] = [];
+  for (let i = 0; i < Math.min(4, n); i++) {
+    picked.push(pool[(start + i) % n]);
+  }
+  return picked;
+}
+
+function buildContent(svc: any, regionIndex: number) {
+  return {
+    intro: pickVariant(svc.introVariants, svc.intro, regionIndex, 1, 0),
+    extraNote: pickVariant(svc.extraNoteVariants, svc.extraNote, regionIndex, 2, 1),
+    scope: pickVariant(svc.scopeVariants, svc.scope, regionIndex, 3, 2),
+    causes: pickVariant(svc.causesVariants, svc.causes, regionIndex, 4, 0),
+    tips: pickVariant(svc.tipsVariants, svc.tips, regionIndex, 1, 3),
+    equipment: pickVariant(svc.equipmentVariants, svc.equipment, regionIndex, 3, 1),
+    costInfo: pickVariant(
+      svc.costInfoVariants,
+      "막힘 정도와 작업 범위에 따라 비용이 달라지기 때문에, 방문 전 상담을 통해 예상 비용을 먼저 안내드리고 현장에서 최종 확인 후 작업을 진행합니다. 숨겨진 추가 비용 없이 투명하게 안내드려요.",
+      regionIndex,
+      4,
+      2
+    ),
+    neglect: pickVariant(
+      svc.neglectVariants,
+      [
+        "막힘이 오래되면 악취가 심해지고 벌레가 발생할 수 있어요.",
+        "역류가 시작되면 바닥 침수, 아랫집 피해로 이어질 수 있어요.",
+        "초기엔 간단한 작업으로 끝나지만, 방치하면 배관 교체 등 큰 공사가 필요해질 수 있어요.",
+      ],
+      regionIndex,
+      2,
+      3
+    ),
+    searchIntent: pickVariant(svc.searchIntentVariants, null, regionIndex, 2, 0) as string | null,
+    longtailFaqs: rotateFaqs(svc.longtailFaqs ?? [], regionIndex),
+  };
+}
+
 function getData(service: string, region: string) {
-  const svc = (services as Record<string, (typeof services)[ServiceKey]>)[service];
+  const svc = (services as Record<string, any>)[service];
   const reg = (regions as Record<string, (typeof regions)[RegionKey]>)[region];
   if (!svc || !reg) return null;
   return { svc, reg };
@@ -48,7 +97,9 @@ export async function generateMetadata({
   const phrase = pickSymptomPhrase(region, svc.symptomPhrases);
   const titleBase = phrase.endsWith("막힘") ? `${reg.name} ${phrase}` : `${reg.name} ${svc.label} ${phrase}`;
   const title = `${titleBase} | ${siteConfig.brand}`;
-  const description = `${siteConfig.brand}는 ${reg.name} 전 지역(${reg.dongs.slice(0, 3).join("·")} 등) ${svc.label} 출장 서비스를 제공합니다. ${svc.intro}`;
+  const regionIndexForMeta = Object.keys(regions).indexOf(region);
+  const introForMeta = pickVariant(svc.introVariants, svc.intro, regionIndexForMeta, 1, 0);
+  const description = `${siteConfig.brand}는 ${reg.name} 전 지역(${reg.dongs.slice(0, 3).join("·")} 등) ${svc.label} 출장 서비스를 제공합니다. ${introForMeta}`;
   return {
     title,
     description,
@@ -84,6 +135,7 @@ export default async function ServiceRegionPage({
   const h1 = phrase.endsWith("막힘") ? `${reg.name} ${phrase}` : `${reg.name} ${svc.label} ${phrase}`;
   const regionIndex = Object.keys(regions).indexOf(region);
   const photos = pickPhotos(regionIndex);
+  const content = buildContent(svc, regionIndex);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -128,7 +180,7 @@ export default async function ServiceRegionPage({
           text: `네, ${reg.name} 전 지역(${reg.dongs.join(", ")}) 출장이 가능합니다.`,
         },
       },
-      ...svc.longtailFaqs.slice(0, 2).map((f) => ({
+      ...content.longtailFaqs.slice(0, 2).map((f: any) => ({
         "@type": "Question",
         name: f.q,
         acceptedAnswer: { "@type": "Answer", text: f.a },
@@ -177,7 +229,7 @@ export default async function ServiceRegionPage({
 
         {/* 지역 디렉토리 */}
         <section className="mx-auto max-w-5xl px-5 py-10">
-          <RegionDirectory serviceKey={service} serviceLabel={svc.label} />
+          <RegionDirectory serviceKey={service} serviceLabel={svc.label} currentArea={reg.area} />
         </section>
 
         {/* 막힘 원인 */}
@@ -186,6 +238,7 @@ export default async function ServiceRegionPage({
             <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">01</span>
             {reg.name} {svc.label}, 왜 자주 발생할까요?
           </h2>
+          <p className="mt-3 leading-relaxed text-gray-700">{content.intro}</p>
           <p className="mt-3 leading-relaxed text-gray-700">
             {reg.feature} {reg.feature2}
           </p>
@@ -193,6 +246,9 @@ export default async function ServiceRegionPage({
             이런 환경에서는 <strong className="text-[#0d2c6b]">{reg.problem}</strong>
             로 인한 {svc.label}이 빈번하게 발생합니다.
           </p>
+          {reg.seasonalNote && (
+            <p className="mt-3 leading-relaxed text-gray-700">{reg.seasonalNote}</p>
+          )}
           <a
             href={`https://map.naver.com/v5/search/${encodeURIComponent(reg.govOffice)}`}
             target="_blank"
@@ -216,8 +272,11 @@ export default async function ServiceRegionPage({
           </h2>
           <p className="mt-3 leading-relaxed text-gray-700">
             {siteConfig.brand}는 {reg.name} 전 지역을 30분 이내 출장하여{" "}
-            {svc.scope} 신속하게 해결해드립니다.
+            {content.scope} 신속하게 해결해드립니다.
           </p>
+          {reg.localTip && (
+            <p className="mt-3 leading-relaxed text-gray-700">{reg.localTip}</p>
+          )}
           <div className="mt-5 grid grid-cols-2 gap-3">
             <PhotoSlot label="현장 작업 모습" ratio="4/3" src={photos.onsiteWork} />
             <PhotoSlot label="내시경 카메라 점검" ratio="4/3" src={photos.onsiteDiagnosis} />
@@ -235,9 +294,18 @@ export default async function ServiceRegionPage({
             <p className="mt-1 text-center text-xs text-gray-400">실제 출장 작업 영상</p>
           </div>
           <div className="mt-5 rounded-lg bg-gray-50 p-5">
-            <p className="leading-relaxed text-gray-700">{svc.extraNote}</p>
+            <p className="leading-relaxed text-gray-700">{content.extraNote}</p>
           </div>
         </section>
+
+        {/* 검색 의도 — 롱테일 키워드 자연 반영 */}
+        {content.searchIntent && (
+          <section className="mx-auto max-w-4xl px-5 py-10">
+            <div className="rounded-lg border-l-4 border-orange-400 bg-orange-50 p-5">
+              <p className="leading-relaxed text-gray-700">{content.searchIntent}</p>
+            </div>
+          </section>
+        )}
 
         {/* 방치하면 안되는 이유 */}
         <section className="mx-auto max-w-4xl px-5 py-10">
@@ -246,9 +314,9 @@ export default async function ServiceRegionPage({
             방치하면 안 되는 이유
           </h2>
           <ul className="mt-3 space-y-2 leading-relaxed text-gray-700">
-            <li>· 막힘이 오래되면 악취가 심해지고 벌레가 발생할 수 있어요.</li>
-            <li>· 역류가 시작되면 바닥 침수, 아랫집 피해로 이어질 수 있어요.</li>
-            <li>· 초기엔 간단한 작업으로 끝나지만, 방치하면 배관 교체 등 큰 공사가 필요해질 수 있어요.</li>
+            {content.neglect.map((n: string) => (
+              <li key={n}>· {n}</li>
+            ))}
           </ul>
           <div className="mt-5 grid grid-cols-2 gap-3">
             <PhotoSlot label="방치된 배관 내부" ratio="16/9" src={photos.neglectBefore} />
@@ -262,11 +330,7 @@ export default async function ServiceRegionPage({
             <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">04</span>
             출장 비용 안내
           </h2>
-          <p className="mt-3 leading-relaxed text-gray-700">
-            막힘 정도와 작업 범위에 따라 비용이 달라지기 때문에, 방문 전 상담을
-            통해 예상 비용을 먼저 안내드리고 현장에서 최종 확인 후 작업을
-            진행합니다. 숨겨진 추가 비용 없이 투명하게 안내드려요.
-          </p>
+          <p className="mt-3 leading-relaxed text-gray-700">{content.costInfo}</p>
         </section>
 
         {/* 장비 소개 */}
@@ -276,7 +340,7 @@ export default async function ServiceRegionPage({
             {svc.label} 작업 장비 소개
           </h2>
           <div className="mt-4 space-y-4">
-            {svc.equipment.map((eq) => (
+            {content.equipment.map((eq: any) => (
               <div key={eq.name} className="rounded-lg border border-gray-200 p-4">
                 <h3 className="font-bold text-gray-900">🔧 {eq.name}</h3>
                 <p className="mt-1 text-sm leading-relaxed text-gray-600">{eq.desc}</p>
@@ -300,7 +364,7 @@ export default async function ServiceRegionPage({
                 </tr>
               </thead>
               <tbody>
-                {svc.causes.map((c, i) => (
+            {content.causes.map((c: any, i: number) => (
                   <tr key={c.cause} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
                     <td className="border-t px-4 py-3 text-gray-800">{c.cause}</td>
                     <td className="border-t px-4 py-3 text-gray-600">{c.solution}</td>
@@ -318,7 +382,7 @@ export default async function ServiceRegionPage({
             {svc.label} 예방하는 팁
           </h2>
           <ul className="mt-4 space-y-3">
-            {svc.tips.map((tip) => (
+            {content.tips.map((tip: string) => (
               <li key={tip} className="flex gap-2 rounded-lg bg-blue-50 p-3 text-sm leading-relaxed text-gray-700">
                 <span>✅</span>
                 <span>{tip}</span>
@@ -334,7 +398,7 @@ export default async function ServiceRegionPage({
             {reg.name} {svc.label} 자주 묻는 질문
           </h2>
           <div className="mt-4 space-y-3">
-            {svc.longtailFaqs.map((f) => (
+            {content.longtailFaqs.map((f: any) => (
               <details key={f.q} className="group rounded-lg border border-gray-200 p-4">
                 <summary className="cursor-pointer list-none font-bold text-gray-900">
                   Q. {f.q}

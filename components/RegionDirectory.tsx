@@ -1,7 +1,15 @@
 import Link from "next/link";
 import regions from "@/data/regions.json";
 
-export default function RegionDirectory({ serviceKey, serviceLabel }: { serviceKey: string; serviceLabel: string }) {
+export default function RegionDirectory({
+  serviceKey,
+  serviceLabel,
+  currentArea,
+}: {
+  serviceKey: string;
+  serviceLabel: string;
+  currentArea?: string;
+}) {
   const groups: Record<string, [string, (typeof regions)[keyof typeof regions]][]> = {};
   for (const [code, data] of Object.entries(regions)) {
     groups[data.area] = groups[data.area] || [];
@@ -12,10 +20,14 @@ export default function RegionDirectory({ serviceKey, serviceLabel }: { serviceK
   }
 
   const order = ["서울특별시", "경기·인천", "충청권"];
+  // 같은 권역만 노출 — 50개 전체를 모든 페이지에 동일하게 나열하면
+  // 페이지 간 본문이 과도하게 중복되어 유사문서로 분류될 위험이 있음
+  const visibleAreas = currentArea ? order.filter((a) => a === currentArea) : order;
+  const otherAreas = order.filter((a) => a !== currentArea);
 
   return (
     <div className="space-y-8">
-      {order
+      {visibleAreas
         .filter((area) => groups[area])
         .map((area) => (
           <div key={area}>
@@ -38,6 +50,21 @@ export default function RegionDirectory({ serviceKey, serviceLabel }: { serviceK
             </div>
           </div>
         ))}
+      {otherAreas.length > 0 && (
+        <div className="flex flex-wrap gap-3 text-sm text-gray-500">
+          {otherAreas
+            .filter((a) => groups[a])
+            .map((a) => (
+              <Link
+                key={a}
+                href={`/${serviceKey}/${Object.entries(regions).find(([, d]) => d.area === a)?.[0]}`}
+                className="underline hover:text-[#0d2c6b]"
+              >
+                {a} {serviceLabel} 지역 보기
+              </Link>
+            ))}
+        </div>
+      )}
     </div>
   );
 }
