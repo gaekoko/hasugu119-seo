@@ -13,8 +13,13 @@ type RegionKey = keyof typeof regions;
 type ServiceKey = keyof typeof services;
 
 export function generateStaticParams() {
-  // TEMP: 검토용으로 1개만 생성 (확정되면 전체 50x3=150개로 복원)
-  return [{ service: "drain", region: "gangnam" }];
+  const params: { service: string; region: string }[] = [];
+  for (const service of Object.keys(services)) {
+    for (const region of Object.keys(regions)) {
+      params.push({ service, region });
+    }
+  }
+  return params;
 }
 
 
