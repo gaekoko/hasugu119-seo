@@ -7,7 +7,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import RegionDirectory from "@/components/RegionDirectory";
 import PhotoSlot from "@/components/PhotoSlot";
-import { pickPhotos } from "@/data/photos";
+import { pickPhotos, pickVideo } from "@/data/photos";
 
 type RegionKey = keyof typeof regions;
 type ServiceKey = keyof typeof services;
@@ -134,7 +134,8 @@ export default async function ServiceRegionPage({
   const phrase = pickSymptomPhrase(region, svc.symptomPhrases);
   const h1 = phrase.endsWith("막힘") ? `${reg.name} ${phrase}` : `${reg.name} ${svc.label} ${phrase}`;
   const regionIndex = Object.keys(regions).indexOf(region);
-  const photos = pickPhotos(regionIndex);
+  const photos = pickPhotos(service, regionIndex);
+  const videoSrc = pickVideo(service, regionIndex);
   const content = buildContent(svc, regionIndex);
 
   const jsonLd = {
@@ -283,7 +284,7 @@ export default async function ServiceRegionPage({
           </div>
           <div className="mt-5 overflow-hidden rounded-lg">
             <video
-              src="/videos/onsite-work-clip-1.mp4"
+              src={videoSrc}
               className="w-full"
               autoPlay
               loop
