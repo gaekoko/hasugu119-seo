@@ -228,11 +228,6 @@ export default async function ServiceRegionPage({
           </div>
         </section>
 
-        {/* 지역 디렉토리 */}
-        <section className="mx-auto max-w-5xl px-5 py-10">
-          <RegionDirectory serviceKey={service} serviceLabel={svc.label} currentArea={reg.area} />
-        </section>
-
         {/* 원인별 해결방법 */}
         <section className="mx-auto max-w-4xl px-5 py-10">
           <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
@@ -256,6 +251,24 @@ export default async function ServiceRegionPage({
                 ))}
               </tbody>
             </table>
+          </div>
+        </section>
+
+        {/* 출장 가능 동 목록 — 01과 02 사이 위치 */}
+        <section className="mx-auto max-w-4xl px-5 py-10">
+          <div className="rounded-xl border border-[#0d2c6b]/20 bg-blue-50 p-6">
+            <h2 className="font-bold text-[#0d2c6b]">
+              출장 가능 동 목록 ({svc.label})
+            </h2>
+            <p className="mt-2 text-gray-700">{reg.dongs.join(" · ")}</p>
+            <a
+              href={`https://map.naver.com/v5/search/${encodeURIComponent(reg.name)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#0d2c6b] underline"
+            >
+              🗺️ {reg.name} 전체 지도에서 보기
+            </a>
           </div>
         </section>
 
@@ -293,28 +306,26 @@ export default async function ServiceRegionPage({
           </ul>
         </section>
 
-        {/* 출장 가능 동 목록 — 03 다음 위치 */}
+        {/* 장비 소개 — 04 위치 */}
         <section className="mx-auto max-w-4xl px-5 py-10">
-          <div className="rounded-xl border border-[#0d2c6b]/20 bg-blue-50 p-6">
-            <h2 className="font-bold text-[#0d2c6b]">
-              출장 가능 동 목록 ({svc.label})
-            </h2>
-            <p className="mt-2 text-gray-700">{reg.dongs.join(" · ")}</p>
-            <a
-              href={`https://map.naver.com/v5/search/${encodeURIComponent(reg.name)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#0d2c6b] underline"
-            >
-              🗺️ {reg.name} 전체 지도에서 보기
-            </a>
+          <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
+            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">04</span>
+            {svc.label} 작업 장비 소개
+          </h2>
+          <div className="mt-4 space-y-4">
+            {content.equipment.map((eq: any) => (
+              <div key={eq.name} className="rounded-lg border border-gray-200 p-4">
+                <h3 className="font-bold text-gray-900">🔧 {eq.name}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-gray-600">{eq.desc}</p>
+              </div>
+            ))}
           </div>
         </section>
 
         {/* 막힘 원인 */}
         <section className="mx-auto max-w-4xl px-5 py-10">
           <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
-            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">04</span>
+            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">05</span>
             {reg.name} {svc.label}, 왜 자주 발생할까요?
           </h2>
           <p className="mt-3 leading-relaxed text-gray-700">{content.intro}</p>
@@ -346,7 +357,7 @@ export default async function ServiceRegionPage({
         {/* 작업 범위 */}
         <section className="mx-auto max-w-4xl px-5 py-10">
           <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
-            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">05</span>
+            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">06</span>
             {svc.label} 작업 범위
           </h2>
           <p className="mt-3 leading-relaxed text-gray-700">
@@ -389,7 +400,7 @@ export default async function ServiceRegionPage({
         {/* 방치하면 안되는 이유 */}
         <section className="mx-auto max-w-4xl px-5 py-10">
           <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
-            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">06</span>
+            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">07</span>
             방치하면 안 되는 이유
           </h2>
           <ul className="mt-3 space-y-2 leading-relaxed text-gray-700">
@@ -406,26 +417,10 @@ export default async function ServiceRegionPage({
         {/* 비용 안내 */}
         <section className="mx-auto max-w-4xl px-5 py-10">
           <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
-            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">07</span>
+            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">08</span>
             출장 비용 안내
           </h2>
           <p className="mt-3 leading-relaxed text-gray-700">{content.costInfo}</p>
-        </section>
-
-        {/* 장비 소개 */}
-        <section className="mx-auto max-w-4xl px-5 py-10">
-          <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
-            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">08</span>
-            {svc.label} 작업 장비 소개
-          </h2>
-          <div className="mt-4 space-y-4">
-            {content.equipment.map((eq: any) => (
-              <div key={eq.name} className="rounded-lg border border-gray-200 p-4">
-                <h3 className="font-bold text-gray-900">🔧 {eq.name}</h3>
-                <p className="mt-1 text-sm leading-relaxed text-gray-600">{eq.desc}</p>
-              </div>
-            ))}
-          </div>
         </section>
 
         {/* 마무리 CTA */}
@@ -462,6 +457,11 @@ export default async function ServiceRegionPage({
               네이버 블로그에서 작업 후기 더 보기
             </a>
           </div>
+        </section>
+
+        {/* 지역 디렉토리 — 페이지 맨 아래 위치 */}
+        <section className="mx-auto max-w-5xl px-5 py-10">
+          <RegionDirectory serviceKey={service} serviceLabel={svc.label} currentArea={reg.area} />
         </section>
       </main>
 
