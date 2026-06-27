@@ -4,10 +4,12 @@ export default function PhotoSlot({
   label,
   ratio = "4/3",
   src,
+  priority = false,
 }: {
   label: string;
   ratio?: string;
   src?: string;
+  priority?: boolean;
 }) {
   if (src) {
     return (
@@ -17,6 +19,8 @@ export default function PhotoSlot({
           alt={label}
           width={1000}
           height={750}
+          priority={priority}
+          loading={priority ? undefined : "lazy"}
           className="h-full w-full object-cover"
         />
       </figure>

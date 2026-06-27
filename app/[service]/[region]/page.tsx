@@ -100,6 +100,7 @@ export async function generateMetadata({
   const regionIndexForMeta = Object.keys(regions).indexOf(region);
   const introForMeta = pickVariant(svc.introVariants, svc.intro, regionIndexForMeta, 1, 0);
   const description = `${siteConfig.brand}는 ${reg.name} 전 지역(${reg.dongs.slice(0, 3).join("·")} 등) ${svc.label} 출장 서비스를 제공합니다. ${introForMeta}`;
+  const ogImage = `${siteConfig.baseUrl}${pickPhotos(service, regionIndexForMeta).hero}`;
   return {
     title,
     description,
@@ -109,7 +110,7 @@ export async function generateMetadata({
       description,
       url: `${siteConfig.baseUrl}/${service}/${region}`,
       siteName: siteConfig.brand,
-      images: [`${siteConfig.baseUrl}/photos/clog-removed-1.jpg`],
+      images: [ogImage],
       locale: "ko_KR",
       type: "website",
     },
@@ -117,7 +118,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title,
       description,
-      images: [`${siteConfig.baseUrl}/photos/clog-removed-1.jpg`],
+      images: [ogImage],
     },
   };
 }
@@ -224,7 +225,7 @@ export default async function ServiceRegionPage({
             &quot;{siteConfig.brand}는 막힘 진단부터 작업까지 한 번의 방문으로 해결합니다&quot;
           </p>
           <div className="mx-auto mt-6 max-w-xs">
-            <PhotoSlot label={`${reg.name} ${svc.label} 작업 사진`} ratio="4/3" src={photos.hero} />
+            <PhotoSlot label={`${reg.name} ${svc.label} 작업 사진`} ratio="4/3" src={photos.hero} priority />
           </div>
         </section>
 
@@ -375,8 +376,8 @@ export default async function ServiceRegionPage({
             <video
               src={videoSrc}
               className="w-full"
-              autoPlay
-              loop
+              preload="none"
+              poster={photos.onsiteWork}
               muted
               playsInline
               controls

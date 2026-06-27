@@ -6,9 +6,13 @@ import { siteConfig } from "@/data/site";
 export const dynamic = "force-static";
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  const lastModified = new Date();
+
   const urls: MetadataRoute.Sitemap = [
     {
       url: siteConfig.baseUrl,
+      lastModified,
+      changeFrequency: "weekly",
       priority: 1,
     },
   ];
@@ -17,6 +21,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     for (const region of Object.keys(regions)) {
       urls.push({
         url: `${siteConfig.baseUrl}/${service}/${region}`,
+        lastModified,
+        changeFrequency: "weekly",
         priority: 0.8,
       });
     }
