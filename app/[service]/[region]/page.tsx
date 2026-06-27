@@ -233,10 +233,88 @@ export default async function ServiceRegionPage({
           <RegionDirectory serviceKey={service} serviceLabel={svc.label} currentArea={reg.area} />
         </section>
 
-        {/* 막힘 원인 */}
+        {/* 원인별 해결방법 */}
         <section className="mx-auto max-w-4xl px-5 py-10">
           <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
             <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">01</span>
+            {svc.label} 원인별 해결방법
+          </h2>
+          <div className="mt-4 overflow-hidden rounded-lg border border-gray-200">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left font-bold text-gray-700">원인</th>
+                  <th className="px-4 py-3 text-left font-bold text-gray-700">해결방법</th>
+                </tr>
+              </thead>
+              <tbody>
+            {content.causes.map((c: any, i: number) => (
+                  <tr key={c.cause} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
+                    <td className="border-t px-4 py-3 text-gray-800">{c.cause}</td>
+                    <td className="border-t px-4 py-3 text-gray-600">{c.solution}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* 자주 묻는 질문 (롱테일 키워드) */}
+        <section className="mx-auto max-w-4xl px-5 py-10">
+          <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
+            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">02</span>
+            {reg.name} {svc.label} 자주 묻는 질문
+          </h2>
+          <div className="mt-4 space-y-3">
+            {content.longtailFaqs.map((f: any) => (
+              <details key={f.q} className="group rounded-lg border border-gray-200 p-4">
+                <summary className="cursor-pointer list-none font-bold text-gray-900">
+                  Q. {f.q}
+                </summary>
+                <p className="mt-2 text-sm leading-relaxed text-gray-600">A. {f.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        {/* 예방 팁 */}
+        <section className="mx-auto max-w-4xl px-5 py-10">
+          <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
+            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">03</span>
+            {svc.label} 예방하는 팁
+          </h2>
+          <ul className="mt-4 space-y-3">
+            {content.tips.map((tip: string) => (
+              <li key={tip} className="flex gap-2 rounded-lg bg-blue-50 p-3 text-sm leading-relaxed text-gray-700">
+                <span>✅</span>
+                <span>{tip}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* 출장 가능 동 목록 — 03 다음 위치 */}
+        <section className="mx-auto max-w-4xl px-5 py-10">
+          <div className="rounded-xl border border-[#0d2c6b]/20 bg-blue-50 p-6">
+            <h2 className="font-bold text-[#0d2c6b]">
+              출장 가능 동 목록 ({svc.label})
+            </h2>
+            <p className="mt-2 text-gray-700">{reg.dongs.join(" · ")}</p>
+            <a
+              href={`https://map.naver.com/v5/search/${encodeURIComponent(reg.name)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#0d2c6b] underline"
+            >
+              🗺️ {reg.name} 전체 지도에서 보기
+            </a>
+          </div>
+        </section>
+
+        {/* 막힘 원인 */}
+        <section className="mx-auto max-w-4xl px-5 py-10">
+          <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
+            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">04</span>
             {reg.name} {svc.label}, 왜 자주 발생할까요?
           </h2>
           <p className="mt-3 leading-relaxed text-gray-700">{content.intro}</p>
@@ -268,7 +346,7 @@ export default async function ServiceRegionPage({
         {/* 작업 범위 */}
         <section className="mx-auto max-w-4xl px-5 py-10">
           <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
-            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">02</span>
+            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">05</span>
             {svc.label} 작업 범위
           </h2>
           <p className="mt-3 leading-relaxed text-gray-700">
@@ -311,7 +389,7 @@ export default async function ServiceRegionPage({
         {/* 방치하면 안되는 이유 */}
         <section className="mx-auto max-w-4xl px-5 py-10">
           <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
-            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">03</span>
+            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">06</span>
             방치하면 안 되는 이유
           </h2>
           <ul className="mt-3 space-y-2 leading-relaxed text-gray-700">
@@ -328,7 +406,7 @@ export default async function ServiceRegionPage({
         {/* 비용 안내 */}
         <section className="mx-auto max-w-4xl px-5 py-10">
           <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
-            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">04</span>
+            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">07</span>
             출장 비용 안내
           </h2>
           <p className="mt-3 leading-relaxed text-gray-700">{content.costInfo}</p>
@@ -337,7 +415,7 @@ export default async function ServiceRegionPage({
         {/* 장비 소개 */}
         <section className="mx-auto max-w-4xl px-5 py-10">
           <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
-            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">05</span>
+            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">08</span>
             {svc.label} 작업 장비 소개
           </h2>
           <div className="mt-4 space-y-4">
@@ -350,83 +428,9 @@ export default async function ServiceRegionPage({
           </div>
         </section>
 
-        {/* 원인별 해결방법 */}
+        {/* 마무리 CTA */}
         <section className="mx-auto max-w-4xl px-5 py-10">
-          <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
-            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">06</span>
-            {svc.label} 원인별 해결방법
-          </h2>
-          <div className="mt-4 overflow-hidden rounded-lg border border-gray-200">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left font-bold text-gray-700">원인</th>
-                  <th className="px-4 py-3 text-left font-bold text-gray-700">해결방법</th>
-                </tr>
-              </thead>
-              <tbody>
-            {content.causes.map((c: any, i: number) => (
-                  <tr key={c.cause} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
-                    <td className="border-t px-4 py-3 text-gray-800">{c.cause}</td>
-                    <td className="border-t px-4 py-3 text-gray-600">{c.solution}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        {/* 예방 팁 */}
-        <section className="mx-auto max-w-4xl px-5 py-10">
-          <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
-            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">07</span>
-            {svc.label} 예방하는 팁
-          </h2>
-          <ul className="mt-4 space-y-3">
-            {content.tips.map((tip: string) => (
-              <li key={tip} className="flex gap-2 rounded-lg bg-blue-50 p-3 text-sm leading-relaxed text-gray-700">
-                <span>✅</span>
-                <span>{tip}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        {/* 자주 묻는 질문 (롱테일 키워드) */}
-        <section className="mx-auto max-w-4xl px-5 py-10">
-          <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
-            <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">08</span>
-            {reg.name} {svc.label} 자주 묻는 질문
-          </h2>
-          <div className="mt-4 space-y-3">
-            {content.longtailFaqs.map((f: any) => (
-              <details key={f.q} className="group rounded-lg border border-gray-200 p-4">
-                <summary className="cursor-pointer list-none font-bold text-gray-900">
-                  Q. {f.q}
-                </summary>
-                <p className="mt-2 text-sm leading-relaxed text-gray-600">A. {f.a}</p>
-              </details>
-            ))}
-          </div>
-        </section>
-
-        {/* 동 목록 */}
-        <section className="mx-auto max-w-4xl px-5 py-10">
-          <div className="rounded-xl border border-[#0d2c6b]/20 bg-blue-50 p-6">
-            <h2 className="font-bold text-[#0d2c6b]">
-              출장 가능 동 목록 ({svc.label})
-            </h2>
-            <p className="mt-2 text-gray-700">{reg.dongs.join(" · ")}</p>
-            <a
-              href={`https://map.naver.com/v5/search/${encodeURIComponent(reg.name)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#0d2c6b] underline"
-            >
-              🗺️ {reg.name} 전체 지도에서 보기
-            </a>
-          </div>
-          <p className="mt-6 text-center leading-relaxed text-gray-600">
+          <p className="text-center leading-relaxed text-gray-600">
             {svc.label}은 방치할수록 악취와 역류로 이어질 수 있으니, 증상이
             보이면 미루지 말고 바로 연락 주시기 바랍니다.
           </p>
