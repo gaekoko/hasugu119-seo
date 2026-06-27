@@ -8,6 +8,8 @@ import Footer from "@/components/Footer";
 import RegionDirectory from "@/components/RegionDirectory";
 import PhotoSlot from "@/components/PhotoSlot";
 import { pickPhotos, pickVideo } from "@/data/photos";
+import { cyclePick, pickDistinctCombo } from "@/lib/rotate";
+import { getNearbyRegions } from "@/lib/regionClusters";
 
 type RegionKey = keyof typeof regions;
 type ServiceKey = keyof typeof services;
@@ -26,41 +28,36 @@ export function generateStaticParams() {
 function pickSymptomPhrase(region: string, phrases: string[]) {
   const keys = Object.keys(regions);
   const idx = keys.indexOf(region);
-  return phrases[(idx >= 0 ? idx : 0) % phrases.length];
+  return phrases[cyclePick(phrases.length, idx >= 0 ? idx : 0)];
 }
 
-// 지역마다 다른 조합이 나오도록, 각 콘텐츠 블록을 서로 다른 오프셋/배수로 로테이션
-function pickVariant<T>(pool: T[] | undefined, fallback: T, regionIndex: number, multiplier: number, offset: number): T {
+// 지역마다 다른 조합이 나오도록, 각 콘텐츠 블록마다 다른 salt로 로테이션
+// (단순 % 연산은 풀 크기만큼 주기가 생겨 그 주기마다 완전히 동일한 조합이 반복되므로,
+//  cyclePick으로 사이클마다 곱수를 바꿔 그 반복을 깬다)
+function pickVariant<T>(pool: T[] | undefined, fallback: T, regionIndex: number, salt: number): T {
   if (!pool || pool.length === 0) return fallback;
-  const idx = (regionIndex * multiplier + offset) % pool.length;
+  const idx = cyclePick(pool.length, regionIndex, salt);
   return pool[idx];
 }
 
-function rotateFaqs(pool: { q: string; a: string }[], regionIndex: number) {
-  const n = pool.length;
-  if (n === 0) return [];
-  const start = regionIndex % n;
-  const picked: { q: string; a: string }[] = [];
-  for (let i = 0; i < Math.min(4, n); i++) {
-    picked.push(pool[(start + i) % n]);
-  }
-  return picked;
+function rotateFaqs(pool: { q: string; a: string }[], regionIndex: number, salt = 0) {
+  if (pool.length === 0) return [];
+  return pickDistinctCombo(pool, regionIndex, 4, salt);
 }
 
 function buildContent(svc: any, regionIndex: number) {
   return {
-    intro: pickVariant(svc.introVariants, svc.intro, regionIndex, 1, 0),
-    extraNote: pickVariant(svc.extraNoteVariants, svc.extraNote, regionIndex, 2, 1),
-    scope: pickVariant(svc.scopeVariants, svc.scope, regionIndex, 3, 2),
-    causes: pickVariant(svc.causesVariants, svc.causes, regionIndex, 4, 0),
-    tips: pickVariant(svc.tipsVariants, svc.tips, regionIndex, 1, 3),
-    equipment: pickVariant(svc.equipmentVariants, svc.equipment, regionIndex, 3, 1),
+    intro: pickVariant(svc.introVariants, svc.intro, regionIndex, 0),
+    extraNote: pickVariant(svc.extraNoteVariants, svc.extraNote, regionIndex, 1),
+    scope: pickVariant(svc.scopeVariants, svc.scope, regionIndex, 2),
+    causes: pickVariant(svc.causesVariants, svc.causes, regionIndex, 3),
+    tips: pickVariant(svc.tipsVariants, svc.tips, regionIndex, 4),
+    equipment: pickVariant(svc.equipmentVariants, svc.equipment, regionIndex, 5),
     costInfo: pickVariant(
       svc.costInfoVariants,
       "막힘 정도와 작업 범위에 따라 비용이 달라지기 때문에, 방문 전 상담을 통해 예상 비용을 먼저 안내드리고 현장에서 최종 확인 후 작업을 진행합니다. 숨겨진 추가 비용 없이 투명하게 안내드려요.",
       regionIndex,
-      4,
-      2
+      6
     ),
     neglect: pickVariant(
       svc.neglectVariants,
@@ -70,11 +67,10 @@ function buildContent(svc: any, regionIndex: number) {
         "초기엔 간단한 작업으로 끝나지만, 방치하면 배관 교체 등 큰 공사가 필요해질 수 있어요.",
       ],
       regionIndex,
-      2,
-      3
+      7
     ),
-    searchIntent: pickVariant(svc.searchIntentVariants, null, regionIndex, 2, 0) as string | null,
-    longtailFaqs: rotateFaqs(svc.longtailFaqs ?? [], regionIndex),
+    searchIntent: pickVariant(svc.searchIntentVariants, null, regionIndex, 8) as string | null,
+    longtailFaqs: rotateFaqs(svc.longtailFaqs ?? [], regionIndex, 9),
   };
 }
 
@@ -98,7 +94,7 @@ export async function generateMetadata({
   const titleBase = phrase.endsWith("막힘") ? `${reg.name} ${phrase}` : `${reg.name} ${svc.label} ${phrase}`;
   const title = `${titleBase} | ${siteConfig.brand}`;
   const regionIndexForMeta = Object.keys(regions).indexOf(region);
-  const introForMeta = pickVariant(svc.introVariants, svc.intro, regionIndexForMeta, 1, 0);
+  const introForMeta = pickVariant(svc.introVariants, svc.intro, regionIndexForMeta, 0);
   const description = `${siteConfig.brand}는 ${reg.name} 전 지역(${reg.dongs.slice(0, 3).join("·")} 등) ${svc.label} 출장 서비스를 제공합니다. ${introForMeta}`;
   const ogImage = `${siteConfig.baseUrl}${pickPhotos(service, regionIndexForMeta).hero}`;
   return {
@@ -138,6 +134,7 @@ export default async function ServiceRegionPage({
   const photos = pickPhotos(service, regionIndex);
   const videoSrc = pickVideo(service, regionIndex);
   const content = buildContent(svc, regionIndex);
+  const nearby = getNearbyRegions(region);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -270,6 +267,27 @@ export default async function ServiceRegionPage({
             >
               🗺️ {reg.name} 전체 지도에서 보기
             </a>
+            {(nearby.prev || nearby.next) && (
+              <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-[#0d2c6b]/10 pt-4 text-sm">
+                <span className="font-semibold text-[#0d2c6b]">인근 지역 {svc.label} 안내</span>
+                {nearby.prev && (
+                  <a
+                    href={`/${service}/${nearby.prev}`}
+                    className="rounded-full border border-[#0d2c6b]/30 px-3 py-1 text-[#0d2c6b] hover:bg-[#0d2c6b] hover:text-white"
+                  >
+                    ← {regions[nearby.prev as keyof typeof regions].name} {svc.label}
+                  </a>
+                )}
+                {nearby.next && (
+                  <a
+                    href={`/${service}/${nearby.next}`}
+                    className="rounded-full border border-[#0d2c6b]/30 px-3 py-1 text-[#0d2c6b] hover:bg-[#0d2c6b] hover:text-white"
+                  >
+                    {regions[nearby.next as keyof typeof regions].name} {svc.label} →
+                  </a>
+                )}
+              </div>
+            )}
           </div>
         </section>
 
@@ -349,9 +367,9 @@ export default async function ServiceRegionPage({
             📍 {reg.govOffice} 위치 보기 (네이버 지도)
           </a>
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <PhotoSlot label="막힘 전 현장" ratio="1/1" src={photos.before} />
-            <PhotoSlot label="장비로 진단" ratio="1/1" src={photos.diagnosis} />
-            <PhotoSlot label="막힘 후 제거물" ratio="1/1" src={photos.removed} />
+            <PhotoSlot label={`${reg.name} ${svc.label} 막힘 전 현장`} ratio="1/1" src={photos.before} />
+            <PhotoSlot label={`${reg.name} ${svc.label} 장비로 진단`} ratio="1/1" src={photos.diagnosis} />
+            <PhotoSlot label={`${reg.name} ${svc.label} 막힘 후 제거물`} ratio="1/1" src={photos.removed} />
           </div>
         </section>
 
@@ -369,8 +387,8 @@ export default async function ServiceRegionPage({
             <p className="mt-3 leading-relaxed text-gray-700">{reg.localTip}</p>
           )}
           <div className="mt-5 grid grid-cols-2 gap-3">
-            <PhotoSlot label="현장 작업 모습" ratio="4/3" src={photos.onsiteWork} />
-            <PhotoSlot label="내시경 카메라 점검" ratio="4/3" src={photos.onsiteDiagnosis} />
+            <PhotoSlot label={`${reg.name} ${svc.label} 현장 작업 모습`} ratio="4/3" src={photos.onsiteWork} />
+            <PhotoSlot label={`${reg.name} ${svc.label} 내시경 카메라 점검`} ratio="4/3" src={photos.onsiteDiagnosis} />
           </div>
           <div className="mt-5 overflow-hidden rounded-lg">
             <video
@@ -410,8 +428,8 @@ export default async function ServiceRegionPage({
             ))}
           </ul>
           <div className="mt-5 grid grid-cols-2 gap-3">
-            <PhotoSlot label="방치된 배관 내부" ratio="16/9" src={photos.neglectBefore} />
-            <PhotoSlot label="실제 제거된 이물질" ratio="16/9" src={photos.neglectAfter} />
+            <PhotoSlot label={`${reg.name} ${svc.label} 방치된 배관 내부`} ratio="16/9" src={photos.neglectBefore} />
+            <PhotoSlot label={`${reg.name} ${svc.label} 실제 제거된 이물질`} ratio="16/9" src={photos.neglectAfter} />
           </div>
         </section>
 

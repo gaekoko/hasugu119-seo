@@ -2,7 +2,7 @@
 // 같은 사진이 모든 서비스 페이지에 똑같이 나오지 않도록 서비스별로 분리했습니다.
 export const photoLibraries: Record<string, Record<string, string[]>> = {
   drain: {
-    hero: ["drain-grate-debris-01", "catch-basin-open-01", "drain-clog-removed-01", "drain-grate-debris-02"],
+    hero: ["drain-grate-debris-01", "catch-basin-open-01", "drain-clog-removed-01", "drain-grate-debris-02", "drain-machine-equipment-01", "drain-debris-removed-03"],
     before: [
       "before-pipe-1",
       "dirty-drain-1",
@@ -74,7 +74,7 @@ export const photoLibraries: Record<string, Record<string, string[]>> = {
     ],
   },
   sink: {
-    hero: ["sink-faucet-1", "sink-before-1", "kitchen-cabinet-before-01", "kitchen-cabinet-before-02"],
+    hero: ["sink-faucet-1", "sink-before-1", "kitchen-cabinet-before-01", "kitchen-cabinet-before-02", "technician-inspecting-drain-01"],
     before: [
       "sink-before-1",
       "kitchen-cabinet-before-01",
@@ -136,8 +136,10 @@ export const photoLibraries: Record<string, Record<string, string[]>> = {
   },
 };
 
+import { cyclePick } from "@/lib/rotate";
+
 function pickFrom(list: string[], index: number, offset = 0) {
-  const i = (index + offset) % list.length;
+  const i = cyclePick(list.length, index, offset);
   return `/photos/${list[i]}.jpg`;
 }
 
@@ -174,7 +176,7 @@ const videoPool = [
 ];
 
 export function pickVideo(service: string, regionIndex: number) {
-  const serviceOffset = service === "sink" ? 5 : service === "toilet" ? 9 : 0;
-  const idx = (regionIndex + serviceOffset) % videoPool.length;
+  const serviceSalt = service === "sink" ? 1 : service === "toilet" ? 2 : 0;
+  const idx = cyclePick(videoPool.length, regionIndex, serviceSalt);
   return `/videos/${videoPool[idx]}.mp4`;
 }
