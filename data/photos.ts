@@ -2,7 +2,7 @@
 // 같은 사진이 모든 서비스 페이지에 똑같이 나오지 않도록 서비스별로 분리했습니다.
 export const photoLibraries: Record<string, Record<string, string[]>> = {
   drain: {
-    hero: ["clog-removed-1", "clog-removed-2", "clog-removed-3", "clog-removed-4", "drain-clog-removed-01", "drain-clog-removed-02"],
+    hero: ["drain-grate-debris-01", "catch-basin-open-01", "drain-clog-removed-01", "drain-grate-debris-02"],
     before: [
       "before-pipe-1",
       "dirty-drain-1",
@@ -74,7 +74,7 @@ export const photoLibraries: Record<string, Record<string, string[]>> = {
     ],
   },
   sink: {
-    hero: ["sink-faucet-1", "drain-clog-removed-03", "drain-clog-removed-04", "kitchen-pipes-before-01"],
+    hero: ["sink-faucet-1", "sink-before-1", "kitchen-cabinet-before-01", "kitchen-cabinet-before-02"],
     before: [
       "sink-before-1",
       "kitchen-cabinet-before-01",
@@ -114,7 +114,7 @@ export const photoLibraries: Record<string, Record<string, string[]>> = {
     ],
   },
   toilet: {
-    hero: ["urinal-clog-removal-01", "urinal-clog-removal-02", "toilet-work-1", "toilet-work-2"],
+    hero: ["toilet-leak-repair-01", "toilet-leak-repair-02", "toilet-leak-repair-03", "toilet-leak-repair-04", "toilet-leak-repair-05"],
     before: ["urinal-overview-before-01", "bathroom-overview-01"],
     diagnosis: [
       "urinal-drain-closeup-01",
