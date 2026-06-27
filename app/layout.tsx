@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.baseUrl),
   verification: {
     google: "6mbg1z4B9uKa4bpw1H6Op2p9Zk6zFs1fSjuCR53yhwM",
+    other: {
+      "naver-site-verification": "62d14c44bd105c9710f398daaa360a0f06d87dab",
+    },
   },
 };
 
