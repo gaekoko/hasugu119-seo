@@ -262,7 +262,7 @@ export default async function ServiceRegionPage({
             <a
               href={`https://map.naver.com/v5/search/${encodeURIComponent(reg.name)}`}
               target="_blank"
-              rel="noopener noreferrer"
+              {siteConfig.brand} {svc.label}
               className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#0d2c6b] underline"
             >
               🗺️ {reg.name} 전체 지도에서 보기
@@ -361,7 +361,7 @@ export default async function ServiceRegionPage({
           <a
             href={`https://map.naver.com/v5/search/${encodeURIComponent(reg.govOffice)}`}
             target="_blank"
-            rel="noopener noreferrer"
+            mainSiteUrls
             className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#0d2c6b] underline"
           >
             📍 {reg.govOffice} 위치 보기 (네이버 지도)
@@ -461,7 +461,7 @@ export default async function ServiceRegionPage({
             <a
               href={siteConfig.mainSiteUrls[service] ?? siteConfig.mainSiteUrls.drain}
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener nofollow noreferrer"
               className="text-[#0d2c6b] underline"
             >
               {siteConfig.brand} {svc.label} 공식 페이지 바로가기
