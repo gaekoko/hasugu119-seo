@@ -12,6 +12,15 @@ export const metadata: Metadata = {
       "naver-site-verification": "62d14c44bd105c9710f398daaa360a0f06d87dab",
     },
   },
+  // 👇 여기에 오픈 그래프(og) 설정을 새롭게 추가했습니다!
+  openGraph: {
+    type: "website",
+    title: `${siteConfig.brand} | 지역별 출장 서비스`,
+    description: `${siteConfig.brand} 지역별 하수구막힘·싱크대막힘·변기막힘 출장 서비스 안내`,
+    url: siteConfig.baseUrl,
+    siteName: siteConfig.brand,
+    locale: "ko_KR",
+  },
 };
 
 export default function RootLayout({
