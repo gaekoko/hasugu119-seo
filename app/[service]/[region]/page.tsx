@@ -100,15 +100,20 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: `${siteConfig.baseUrl}/${service}/${region}` },
+    alternates: { canonical: `${siteConfig.baseUrl}/${service}/${region}/` },
     openGraph: {
       title,
       description,
-      url: `${siteConfig.baseUrl}/${service}/${region}`,
+      url: `${siteConfig.baseUrl}/${service}/${region}/`,
       siteName: siteConfig.brand,
       images: [ogImage],
       locale: "ko_KR",
       type: "website",
+    },
+    robots: { index: true, follow: true },
+    other: {
+      "geo.region": "KR-11",
+      "geo.placename": reg.name,
     },
     twitter: {
       card: "summary_large_image",
@@ -222,7 +227,7 @@ export default async function ServiceRegionPage({
             &quot;{siteConfig.brand}는 막힘 진단부터 작업까지 한 번의 방문으로 해결합니다&quot;
           </p>
           <div className="mx-auto mt-6 max-w-xs">
-            <PhotoSlot label={`${reg.name} ${svc.label} 작업 사진`} ratio="4/3" src={photos.hero} priority />
+            <PhotoSlot label={`${reg.name} 배관 출장 현장 사진`} ratio="4/3" src={photos.hero} priority />
           </div>
         </section>
 
@@ -230,7 +235,7 @@ export default async function ServiceRegionPage({
         <section className="mx-auto max-w-4xl px-5 py-10">
           <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
             <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">01</span>
-            {svc.label} 원인별 해결방법
+            배관 막힘 원인별 해결방법
           </h2>
           <div className="mt-4 overflow-hidden rounded-lg border border-gray-200">
             <table className="w-full text-sm">
@@ -313,7 +318,7 @@ export default async function ServiceRegionPage({
         <section className="mx-auto max-w-4xl px-5 py-10">
           <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
             <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">03</span>
-            {svc.label} 예방하는 팁
+            배관 막힘 예방 팁
           </h2>
           <ul className="mt-4 space-y-3">
             {content.tips.map((tip: string) => (
@@ -329,7 +334,7 @@ export default async function ServiceRegionPage({
         <section className="mx-auto max-w-4xl px-5 py-10">
           <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
             <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">04</span>
-            {svc.label} 작업 장비 소개
+            출장 작업 장비 소개
           </h2>
           <div className="mt-4 space-y-4">
             {content.equipment.map((eq: any) => (
@@ -367,9 +372,9 @@ export default async function ServiceRegionPage({
             📍 {reg.govOffice} 위치 보기 (네이버 지도)
           </a>
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <PhotoSlot label={`${reg.name} ${svc.label} 막힘 전 현장`} ratio="1/1" src={photos.before} />
-            <PhotoSlot label={`${reg.name} ${svc.label} 장비로 진단`} ratio="1/1" src={photos.diagnosis} />
-            <PhotoSlot label={`${reg.name} ${svc.label} 막힘 후 제거물`} ratio="1/1" src={photos.removed} />
+            <PhotoSlot label={`${reg.name} 배관 막힘 작업 전 현장`} ratio="1/1" src={photos.before} />
+            <PhotoSlot label={`${reg.name} 내시경 카메라 진단`} ratio="1/1" src={photos.diagnosis} />
+            <PhotoSlot label={`${reg.name} 배관 청소 후 제거된 이물질`} ratio="1/1" src={photos.removed} />
           </div>
         </section>
 
@@ -377,7 +382,7 @@ export default async function ServiceRegionPage({
         <section className="mx-auto max-w-4xl px-5 py-10">
           <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
             <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">06</span>
-            {svc.label} 작업 범위
+            출장 작업 범위
           </h2>
           <p className="mt-3 leading-relaxed text-gray-700">
             {siteConfig.brand}는 {reg.name} 전 지역을 30분 이내 출장하여{" "}
@@ -387,8 +392,8 @@ export default async function ServiceRegionPage({
             <p className="mt-3 leading-relaxed text-gray-700">{reg.localTip}</p>
           )}
           <div className="mt-5 grid grid-cols-2 gap-3">
-            <PhotoSlot label={`${reg.name} ${svc.label} 현장 작업 모습`} ratio="4/3" src={photos.onsiteWork} />
-            <PhotoSlot label={`${reg.name} ${svc.label} 내시경 카메라 점검`} ratio="4/3" src={photos.onsiteDiagnosis} />
+            <PhotoSlot label={`${reg.name} 출장 작업 진행 중`} ratio="4/3" src={photos.onsiteWork} />
+            <PhotoSlot label={`${reg.name} 배관 내시경 점검 현장`} ratio="4/3" src={photos.onsiteDiagnosis} />
           </div>
           <div className="mt-5 overflow-hidden rounded-lg">
             <video
@@ -428,8 +433,8 @@ export default async function ServiceRegionPage({
             ))}
           </ul>
           <div className="mt-5 grid grid-cols-2 gap-3">
-            <PhotoSlot label={`${reg.name} ${svc.label} 방치된 배관 내부`} ratio="16/9" src={photos.neglectBefore} />
-            <PhotoSlot label={`${reg.name} ${svc.label} 실제 제거된 이물질`} ratio="16/9" src={photos.neglectAfter} />
+            <PhotoSlot label={`${reg.name} 방치된 배관 내부 상태`} ratio="16/9" src={photos.neglectBefore} />
+            <PhotoSlot label={`${reg.name} 배관 청소 후 제거된 이물질`} ratio="16/9" src={photos.neglectAfter} />
           </div>
         </section>
 
@@ -445,8 +450,7 @@ export default async function ServiceRegionPage({
         {/* 마무리 CTA */}
         <section className="mx-auto max-w-4xl px-5 py-10">
           <p className="text-center leading-relaxed text-gray-600">
-            {svc.label}은 방치할수록 악취와 역류로 이어질 수 있으니, 증상이
-            보이면 미루지 말고 바로 연락 주시기 바랍니다.
+            배관 막힘은 방치할수록 악취와 역류로 이어질 수 있습니다. {reg.name} {svc.label} 증상이 보이면 미루지 말고 바로 연락 주세요.
           </p>
           <div className="mt-8 text-center">
             <a

@@ -20,7 +20,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   for (const service of Object.keys(services)) {
     for (const region of Object.keys(regions)) {
       urls.push({
-        url: `${siteConfig.baseUrl}/${service}/${region}`,
+        url: `${siteConfig.baseUrl}/${service}/${region}/`,
         lastModified,
         changeFrequency: "weekly",
         priority: 0.8,
