@@ -1,6 +1,6 @@
 export const siteConfig = {
   brand: "백프로배관케어",
-  companyName: "하수구막힘 100% 배관케어",
+  companyName: "하수구 100% 배관케어",
   ceo: "유성훈",
   businessNumber: "374-59-00985",
   phone: "010-7785-1112",
