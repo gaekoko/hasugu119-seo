@@ -204,7 +204,7 @@ export default async function ServiceRegionPage({
         <section className="relative overflow-hidden bg-gradient-to-br from-[#0a1f4d] via-[#0d2c6b] to-[#1a4fb8] px-5 py-14 text-center text-white">
           <p className="text-sm text-blue-200">
             <span className="opacity-80">Home</span> ›{" "}
-            <span className="opacity-80">{svc.label}</span> › {reg.name}
+            <span className="opacity-80">배관 서비스</span> › {reg.name}
           </p>
           <p className="mt-4 text-sm font-semibold text-orange-300">
             365일 24시간 긴급출동
@@ -261,7 +261,7 @@ export default async function ServiceRegionPage({
         <section className="mx-auto max-w-4xl px-5 py-10">
           <div className="rounded-xl border border-[#0d2c6b]/20 bg-blue-50 p-6">
             <h2 className="font-bold text-[#0d2c6b]">
-              출장 가능 동 목록 ({svc.label})
+              출장 가능 동 목록
             </h2>
             <p className="mt-2 text-gray-700">{reg.dongs.join(" · ")}</p>
             <a
@@ -274,13 +274,13 @@ export default async function ServiceRegionPage({
             </a>
             {(nearby.prev || nearby.next) && (
               <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-[#0d2c6b]/10 pt-4 text-sm">
-                <span className="font-semibold text-[#0d2c6b]">인근 지역 {svc.label} 안내</span>
+                <span className="font-semibold text-[#0d2c6b]">인근 지역 출장 안내</span>
                 {nearby.prev && (
                   <a
                     href={`/${service}/${nearby.prev}`}
                     className="rounded-full border border-[#0d2c6b]/30 px-3 py-1 text-[#0d2c6b] hover:bg-[#0d2c6b] hover:text-white"
                   >
-                    ← {regions[nearby.prev as keyof typeof regions].name} {svc.label}
+                    ← {regions[nearby.prev as keyof typeof regions].name}
                   </a>
                 )}
                 {nearby.next && (
@@ -288,7 +288,7 @@ export default async function ServiceRegionPage({
                     href={`/${service}/${nearby.next}`}
                     className="rounded-full border border-[#0d2c6b]/30 px-3 py-1 text-[#0d2c6b] hover:bg-[#0d2c6b] hover:text-white"
                   >
-                    {regions[nearby.next as keyof typeof regions].name} {svc.label} →
+                    {regions[nearby.next as keyof typeof regions].name} →
                   </a>
                 )}
               </div>
@@ -300,7 +300,7 @@ export default async function ServiceRegionPage({
         <section className="mx-auto max-w-4xl px-5 py-10">
           <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
             <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">02</span>
-            {reg.name} {svc.label} 자주 묻는 질문
+            {reg.name} 배관 막힘 자주 묻는 질문
           </h2>
           <div className="mt-4 space-y-3">
             {content.longtailFaqs.map((f: any) => (
@@ -350,7 +350,7 @@ export default async function ServiceRegionPage({
         <section className="mx-auto max-w-4xl px-5 py-10">
           <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
             <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">05</span>
-            {reg.name} {svc.label}, 왜 자주 발생할까요?
+            {reg.name} 배관 막힘, 왜 자주 발생할까요?
           </h2>
           <p className="mt-3 leading-relaxed text-gray-700">{content.intro}</p>
           <p className="mt-3 leading-relaxed text-gray-700">
@@ -358,7 +358,7 @@ export default async function ServiceRegionPage({
           </p>
           <p className="mt-3 leading-relaxed text-gray-700">
             이런 환경에서는 <strong className="text-[#0d2c6b]">{reg.problem}</strong>
-            로 인한 {svc.label}이 빈번하게 발생합니다.
+            로 인한 배관 막힘이 빈번하게 발생합니다.
           </p>
           {reg.seasonalNote && (
             <p className="mt-3 leading-relaxed text-gray-700">{reg.seasonalNote}</p>
@@ -450,7 +450,7 @@ export default async function ServiceRegionPage({
         {/* 마무리 CTA */}
         <section className="mx-auto max-w-4xl px-5 py-10">
           <p className="text-center leading-relaxed text-gray-600">
-            배관 막힘은 방치할수록 악취와 역류로 이어질 수 있습니다. {reg.name} {svc.label} 증상이 보이면 미루지 말고 바로 연락 주세요.
+            배관 막힘은 방치할수록 악취와 역류로 이어질 수 있습니다. {reg.name} 증상이 보이면 미루지 말고 바로 연락 주세요.
           </p>
           <div className="mt-8 text-center">
             <a
@@ -468,7 +468,7 @@ export default async function ServiceRegionPage({
               rel="noopener noreferrer nofollow"
               className="text-[#0d2c6b] underline"
             >
-              {siteConfig.brand} {svc.label} 공식 페이지 바로가기
+              {siteConfig.brand} 공식 페이지 바로가기
             </a>
             <span className="text-gray-300">|</span>
             <a
