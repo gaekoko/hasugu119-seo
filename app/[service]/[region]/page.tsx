@@ -100,7 +100,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: `${siteConfig.baseUrl}/${service}/${region}/` },
+    alternates: { canonical: `${siteConfig.baseUrl}/${service}/${region}` },
     openGraph: {
       title,
       description,
@@ -164,6 +164,16 @@ export default async function ServiceRegionPage({
     },
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "홈", "item": siteConfig.baseUrl },
+      { "@type": "ListItem", "position": 2, "name": svc.label, "item": `${siteConfig.baseUrl}/${service}` },
+      { "@type": "ListItem", "position": 3, "name": `${reg.name} ${svc.label}`, "item": `${siteConfig.baseUrl}/${service}/${region}` },
+    ],
+  };
+
   const faqJsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -196,6 +206,7 @@ export default async function ServiceRegionPage({
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
 
       <Header currentService={service} />
 
