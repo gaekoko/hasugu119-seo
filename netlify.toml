@@ -1,6 +1,12 @@
 [build]
   publish = "out"
 
+[[redirects]]
+  from = "https://www.info.hasugu119.co.kr/*"
+  to = "https://info.hasugu119.co.kr/:splat"
+  status = 301
+  force = true
+
 [[headers]]
   for = "/*"
   [headers.values]

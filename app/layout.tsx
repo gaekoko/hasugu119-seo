@@ -4,8 +4,8 @@ import "./globals.css";
 import { siteConfig } from "@/data/site";
 
 export const metadata: Metadata = {
-  title: `${siteConfig.brand} | 지역별 출장 서비스`,
-  description: `${siteConfig.brand} 지역별 하수구·싱크대·변기 배관 막힘 출장 서비스 안내. 빠른 출동, 현장 확인 후 견적.`,
+  title: `${siteConfig.brand} | 하수구막힘·싱크대·변기 배관 출장`,
+  description: `${siteConfig.brand} 지역별 하수구막힘·싱크대막힘·변기막힘 배관 출장 서비스 안내. 빠른 출동, 현장 확인 후 견적. 365일 24시간.`,
   metadataBase: new URL(siteConfig.baseUrl),
   robots: { index: true, follow: true },
   verification: {
@@ -16,8 +16,8 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    title: `${siteConfig.brand} | 지역별 출장 서비스`,
-    description: `${siteConfig.brand} 지역별 배관 막힘 출장 서비스 안내`,
+    title: `${siteConfig.brand} | 하수구막힘·싱크대·변기 배관 출장`,
+    description: `${siteConfig.brand} 지역별 하수구막힘·싱크대막힘·변기막힘 배관 출장 서비스 안내. 365일 24시간.`,
     url: siteConfig.baseUrl,
     siteName: siteConfig.brand,
     locale: "ko_KR",

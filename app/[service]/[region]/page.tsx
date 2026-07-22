@@ -104,7 +104,7 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      url: `${siteConfig.baseUrl}/${service}/${region}/`,
+      url: `${siteConfig.baseUrl}/${service}/${region}`,
       siteName: siteConfig.brand,
       images: [ogImage],
       locale: "ko_KR",
@@ -112,7 +112,7 @@ export async function generateMetadata({
     },
     robots: { index: true, follow: true },
     other: {
-      "geo.region": "KR-11",
+      "geo.region": reg.area === "서울특별시" ? "KR-11" : reg.area === "경기·인천" ? "KR-41" : "KR-44",
       "geo.placename": reg.name,
     },
     twitter: {
