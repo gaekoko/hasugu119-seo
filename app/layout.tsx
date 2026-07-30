@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
 import { siteConfig } from "@/data/site";
+// 렌더 차단 방지: GTM은 afterInteractive, CSS는 globals.css만 유지
 
 export const metadata: Metadata = {
   title: `${siteConfig.brand} | 하수구막힘·싱크대·변기 배관 출장`,
@@ -31,7 +32,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className="h-full antialiased">
-      <head>
+      <head />
+
+      <body className="min-h-full flex flex-col font-sans">
+        {children}
+
+        {/* GTM: body 최하단 + afterInteractive → 렌더 차단 제거 */}
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-WTPQL96Q"
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          />
+        </noscript>
         <Script id="gtm" strategy="afterInteractive">
           {`
             (function(w,d,s,l,i){w[l]=w[l]||[];
@@ -45,19 +59,6 @@ export default function RootLayout({
             })(window,document,'script','dataLayer','GTM-WTPQL96Q');
           `}
         </Script>
-      </head>
-
-      <body className="min-h-full flex flex-col font-sans">
-        <noscript>
-          <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-WTPQL96Q"
-            height="0"
-            width="0"
-            style={{ display: "none", visibility: "hidden" }}
-          />
-        </noscript>
-
-        {children}
       </body>
     </html>
   );
