@@ -7,6 +7,7 @@
   status = 301
   force = true
 
+# 기본 헤더
 [[headers]]
   for = "/*"
   [headers.values]
@@ -14,6 +15,25 @@
     X-Frame-Options = "SAMEORIGIN"
     X-Content-Type-Options = "nosniff"
 
+# HTML: 캐시 금지 (항상 최신 버전)
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# JS/CSS: 콘텐츠 해시가 파일명에 포함 → 장기 캐시 가능 (로딩속도 핵심)
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# 이미지: 1주일 캐시
+[[headers]]
+  for = "/photos/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+# sitemap / robots
 [[headers]]
   for = "/sitemap.xml"
   [headers.values]
