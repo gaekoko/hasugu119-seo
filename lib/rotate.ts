@@ -11,13 +11,18 @@ function gcd(a: number, b: number): number {
 
 const CANDIDATE_MULTIPLIERS = [1, 5, 7, 11, 13, 17, 19, 23, 29, 31];
 
-export function cyclePick(poolLength: number, regionIndex: number, salt = 0): number {
+// slugSalt: slug 문자열 길이 등 지역 고유값을 추가로 받아
+// ri 차이가 pool 크기의 배수인 지역들(예: ri=9 vs ri=39, 차이=30)도
+// 서로 다른 인덱스를 받도록 한다.
+export function cyclePick(poolLength: number, regionIndex: number, salt = 0, slugSalt = 0): number {
   if (poolLength <= 0) return 0;
-  const cycle = Math.floor(regionIndex / poolLength) + salt;
+  // slugSalt를 regionIndex에 섞어 ri 주기 충돌 방지
+  const adjustedIndex = regionIndex + slugSalt * 28;
+  const cycle = Math.floor(adjustedIndex / poolLength) + salt;
   const coprime = CANDIDATE_MULTIPLIERS.filter((m) => gcd(m, poolLength) === 1);
   const mult = coprime.length > 0 ? coprime[cycle % coprime.length] : 1;
   const add = ((cycle % poolLength) + poolLength) % poolLength;
-  const base = ((regionIndex % poolLength) + poolLength) % poolLength;
+  const base = ((adjustedIndex % poolLength) + poolLength) % poolLength;
   return (base * mult + add) % poolLength;
 }
 

@@ -34,30 +34,31 @@ function pickSymptomPhrase(region: string, phrases: string[]) {
 // 지역마다 다른 조합이 나오도록, 각 콘텐츠 블록마다 다른 salt로 로테이션
 // (단순 % 연산은 풀 크기만큼 주기가 생겨 그 주기마다 완전히 동일한 조합이 반복되므로,
 //  cyclePick으로 사이클마다 곱수를 바꿔 그 반복을 깬다)
-function pickVariant<T>(pool: T[] | undefined, fallback: T, regionIndex: number, salt: number): T {
+function pickVariant<T>(pool: T[] | undefined, fallback: T, regionIndex: number, salt: number, slugSalt = 0): T {
   if (!pool || pool.length === 0) return fallback;
-  const idx = cyclePick(pool.length, regionIndex, salt);
+  const idx = cyclePick(pool.length, regionIndex, salt, slugSalt);
   return pool[idx];
 }
 
-function rotateFaqs(pool: { q: string; a: string }[], regionIndex: number, salt = 0) {
+function rotateFaqs(pool: { q: string; a: string }[], regionIndex: number, salt = 0, slugSalt = 0) {
   if (pool.length === 0) return [];
-  return pickDistinctCombo(pool, regionIndex, 4, salt);
+  return pickDistinctCombo(pool, regionIndex + slugSalt * 28, 4, salt);
 }
 
-function buildContent(svc: any, regionIndex: number) {
+function buildContent(svc: any, regionIndex: number, slugSalt: number) {
   return {
-    intro: pickVariant(svc.introVariants, svc.intro, regionIndex, 0),
-    extraNote: pickVariant(svc.extraNoteVariants, svc.extraNote, regionIndex, 1),
-    scope: pickVariant(svc.scopeVariants, svc.scope, regionIndex, 2),
-    causes: pickVariant(svc.causesVariants, svc.causes, regionIndex, 3),
-    tips: pickVariant(svc.tipsVariants, svc.tips, regionIndex, 4),
-    equipment: pickVariant(svc.equipmentVariants, svc.equipment, regionIndex, 5),
+    intro: pickVariant(svc.introVariants, svc.intro, regionIndex, 0, slugSalt),
+    extraNote: pickVariant(svc.extraNoteVariants, svc.extraNote, regionIndex, 1, slugSalt),
+    scope: pickVariant(svc.scopeVariants, svc.scope, regionIndex, 2, slugSalt),
+    causes: pickVariant(svc.causesVariants, svc.causes, regionIndex, 3, slugSalt),
+    tips: pickVariant(svc.tipsVariants, svc.tips, regionIndex, 4, slugSalt),
+    equipment: pickVariant(svc.equipmentVariants, svc.equipment, regionIndex, 5, slugSalt),
     costInfo: pickVariant(
       svc.costInfoVariants,
       "막힘 정도와 작업 범위에 따라 비용이 달라지기 때문에, 방문 전 상담을 통해 예상 비용을 먼저 안내드리고 현장에서 최종 확인 후 작업을 진행합니다. 숨겨진 추가 비용 없이 투명하게 안내드려요.",
       regionIndex,
-      6
+      6,
+      slugSalt
     ),
     neglect: pickVariant(
       svc.neglectVariants,
@@ -67,10 +68,11 @@ function buildContent(svc: any, regionIndex: number) {
         "초기엔 간단한 작업으로 끝나지만, 방치하면 배관 교체 등 큰 공사가 필요해질 수 있어요.",
       ],
       regionIndex,
-      7
+      7,
+      slugSalt
     ),
-    searchIntent: pickVariant(svc.searchIntentVariants, null, regionIndex, 8) as string | null,
-    longtailFaqs: rotateFaqs(svc.longtailFaqs ?? [], regionIndex, 9),
+    searchIntent: pickVariant(svc.searchIntentVariants, null, regionIndex, 8, slugSalt) as string | null,
+    longtailFaqs: rotateFaqs(svc.longtailFaqs ?? [], regionIndex, 9, slugSalt),
   };
 }
 
@@ -106,10 +108,19 @@ export async function generateMetadata({
   // description: 지역 고유 문장(intro)을 앞에 두어 서치어드바이저 중복 판정 회피
   const dongs3 = reg.dongs.slice(0, 3).join("·");
   const description = `${introForMeta} ${reg.name}(${dongs3} 등) ${svc.label} 출장 — ${siteConfig.brand} 365일 24시간.`;
+  const aiSummary = `${reg.name} ${svc.label} 출장 서비스. ${siteConfig.brand} 365일 24시간 운영. 평균 30분 이내 방문. 현장 확인 후 견적. 전화: ${siteConfig.phone}`;
   const ogImage = `${siteConfig.baseUrl}${pickPhotos(service, regionIndexForMeta).hero}`;
   return {
     title,
     description,
+    // AI 브리핑/스니펫 최적화
+    other: {
+      // 네이버 AI 브리핑 최적화
+      "naver-site-verification": undefined,
+      "summary": aiSummary,
+      // ChatGPT/Gemini 크롤러 허용 (robots.txt와 연동)
+      "robots": "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1",
+    },
     alternates: { canonical: `${siteConfig.baseUrl}/${service}/${region}` },
     openGraph: {
       title,
@@ -148,7 +159,8 @@ export default async function ServiceRegionPage({
   const regionIndex = Object.keys(regions).indexOf(region);
   const photos = pickPhotos(service, regionIndex);
 
-  const content = buildContent(svc, regionIndex);
+  const slugSalt = region.length; // slug 길이로 ri 주기 충돌 방지
+  const content = buildContent(svc, regionIndex, slugSalt);
   const nearby = getNearbyRegions(region);
 
   const jsonLd = {
@@ -212,11 +224,79 @@ export default async function ServiceRegionPage({
     ],
   };
 
+  // HowTo Schema - 네이버AI·ChatGPT 핵심 (단계별 가이드)
+  const howToJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: `${reg.name} ${svc.label} 출장 요청 방법`,
+    description: `${reg.name}에서 ${svc.label} 발생 시 ${siteConfig.brand}에 출장 요청하는 방법입니다.`,
+    totalTime: "PT30M",
+    estimatedCost: { "@type": "MonetaryAmount", currency: "KRW", value: "전화 상담 후 안내" },
+    step: [
+      {
+        "@type": "HowToStep",
+        position: 1,
+        name: "증상 확인",
+        text: `${reg.name} 현장에서 ${svc.label} 증상을 확인합니다. 물이 역류하거나 배수 속도가 느려진 경우 즉시 연락하세요.`,
+      },
+      {
+        "@type": "HowToStep",
+        position: 2,
+        name: "전화 상담 및 출동 요청",
+        text: `${siteConfig.phone}으로 전화해 ${reg.name} 주소와 증상을 설명하면 평균 30분 이내 기술자가 출동합니다.`,
+      },
+      {
+        "@type": "HowToStep",
+        position: 3,
+        name: "현장 내시경 진단",
+        text: "기술자가 내시경 카메라로 배관 내부를 촬영해 막힘 원인과 위치를 정확히 파악합니다.",
+      },
+      {
+        "@type": "HowToStep",
+        position: 4,
+        name: "견적 확인 및 작업 동의",
+        text: "진단 결과와 예상 비용을 안내받고 동의 후 작업을 시작합니다. 숨겨진 추가 비용은 없습니다.",
+      },
+      {
+        "@type": "HowToStep",
+        position: 5,
+        name: "고압세척 및 통수 확인",
+        text: "전문 장비로 막힘을 제거하고 통수 상태를 고객과 함께 확인한 뒤 작업을 완료합니다.",
+      },
+    ],
+  };
+
+  // WebPage + Speakable Schema - 구글AI·제미나이 최적화
+  const webPageJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: title,
+    description,
+    url: `${siteConfig.baseUrl}/${service}/${region}`,
+    inLanguage: "ko",
+    dateModified: new Date().toISOString().split("T")[0],
+    speakable: {
+      "@type": "SpeakableSpecification",
+      // AI가 핵심 내용으로 발췌할 CSS 셀렉터
+      cssSelector: ["h1", ".ai-summary", ".faq-section"],
+    },
+    mainEntity: {
+      "@type": "LocalBusiness",
+      "@id": `${siteConfig.baseUrl}/#business`,
+      name: siteConfig.brand,
+      telephone: siteConfig.phone,
+      areaServed: reg.name,
+      openingHours: "Mo-Su 00:00-23:59",
+    },
+  };
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howToJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageJsonLd) }} />
 
       <Header currentService={service} />
 
@@ -236,6 +316,19 @@ export default async function ServiceRegionPage({
           <p className="mt-4 text-base text-blue-100">
             평균 30분 이내 방문 · 출장비 상담 후 작업 · {reg.dongs.length}개 동 전 지역 가능
           </p>
+        </section>
+
+        {/* AI 브리핑 요약 정의문 - AI 크롤러가 첫 번째로 발췌하는 영역 */}
+        <section className="ai-summary mx-auto max-w-4xl px-5 pt-8 pb-2">
+          <div className="rounded-xl border-l-4 border-[#0d2c6b] bg-blue-50 px-5 py-4">
+            <p className="text-sm font-bold text-[#0d2c6b]">📌 {reg.name} {svc.label} 핵심 정보</p>
+            <p className="mt-1 text-sm text-gray-700">
+              <strong>{reg.name} {svc.label}</strong>은 배관 내 이물질·기름 슬러지·스케일 누적이 주된 원인입니다.
+              {siteConfig.brand}는 {reg.name} 전 지역({dongs3} 등) 365일 24시간 출장하며,
+              평균 30분 이내 방문·내시경 진단·고압세척으로 당일 해결합니다.
+              문의: <strong>{siteConfig.phone}</strong>
+            </p>
+          </div>
         </section>
 
         {/* 한 줄 카피 + 대표 사진 */}
@@ -317,8 +410,8 @@ export default async function ServiceRegionPage({
           </div>
         </section>
 
-        {/* 자주 묻는 질문 (롱테일 키워드) */}
-        <section className="mx-auto max-w-4xl px-5 py-10">
+        {/* 자주 묻는 질문 (롱테일 키워드) - faq-section: Speakable Schema 연동 */}
+        <section className="faq-section mx-auto max-w-4xl px-5 py-10">
           <h2 className="flex items-center gap-2 text-xl font-bold text-[#0d2c6b]">
             <span className="rounded bg-[#0d2c6b] px-2 py-1 text-xs text-white">02</span>
             {reg.name} 배관 막힘 자주 묻는 질문

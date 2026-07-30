@@ -8,7 +8,17 @@ export const metadata: Metadata = {
   title: `${siteConfig.brand} | 하수구막힘·싱크대·변기 배관 출장`,
   description: `${siteConfig.brand} 지역별 하수구막힘·싱크대막힘·변기막힘 배관 출장 서비스 안내. 빠른 출동, 현장 확인 후 견적. 365일 24시간.`,
   metadataBase: new URL(siteConfig.baseUrl),
-  robots: { index: true, follow: true },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-snippet": -1,
+      "max-image-preview": "large",
+      "max-video-preview": -1,
+    },
+  },
   verification: {
     google: "6mbg1z4B9uKa4bpw1H6Op2p9Zk6zFs1fSjuCR53yhwM",
     other: {
