@@ -7,7 +7,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import RegionDirectory from "@/components/RegionDirectory";
 import PhotoSlot from "@/components/PhotoSlot";
-import { pickPhotos, pickVideo } from "@/data/photos";
+import { pickPhotos } from "@/data/photos";
 import { cyclePick, pickDistinctCombo } from "@/lib/rotate";
 import { getNearbyRegions } from "@/lib/regionClusters";
 
@@ -91,11 +91,21 @@ export async function generateMetadata({
   if (!data) return {};
   const { svc, reg } = data;
   const phrase = pickSymptomPhrase(region, svc.symptomPhrases);
-  const titleBase = phrase.endsWith("막힘") ? `${reg.name} ${phrase}` : `${reg.name} ${svc.label} ${phrase}`;
+  // phrase가 "막힘"으로 끝나면 svc.label이 포함된 케이스 — 그대로 두면 title이 짧아지므로
+  // " 출장"을 추가해 최소 22자 이상 확보하고, svc.label도 명시
+  // phrase가 "막힘"으로 끝날 때: phrase가 이미 svc.label을 포함하면 label 생략 후 " 출장" 추가
+  // (예: svc.label="싱크대막힘", phrase="싱크대막힘" → "싱크대막힘 출장"으로 중복 방지)
+  const titleBase = phrase.endsWith("막힘")
+    ? phrase.includes(svc.label)
+      ? `${reg.name} ${phrase} 출장`
+      : `${reg.name} ${svc.label} ${phrase} 출장`
+    : `${reg.name} ${svc.label} ${phrase}`;
   const title = `${titleBase} | ${siteConfig.brand}`;
   const regionIndexForMeta = Object.keys(regions).indexOf(region);
   const introForMeta = pickVariant(svc.introVariants, svc.intro, regionIndexForMeta, 0);
-  const description = `${siteConfig.brand}는 ${reg.name} 전 지역(${reg.dongs.slice(0, 3).join("·")} 등) ${svc.label} 출장 서비스를 제공합니다. ${introForMeta}`;
+  // description: 지역 고유 문장(intro)을 앞에 두어 서치어드바이저 중복 판정 회피
+  const dongs3 = reg.dongs.slice(0, 3).join("·");
+  const description = `${introForMeta} ${reg.name}(${dongs3} 등) ${svc.label} 출장 — ${siteConfig.brand} 365일 24시간.`;
   const ogImage = `${siteConfig.baseUrl}${pickPhotos(service, regionIndexForMeta).hero}`;
   return {
     title,
@@ -137,7 +147,7 @@ export default async function ServiceRegionPage({
   const h1 = phrase.endsWith("막힘") ? `${reg.name} ${phrase}` : `${reg.name} ${svc.label} ${phrase}`;
   const regionIndex = Object.keys(regions).indexOf(region);
   const photos = pickPhotos(service, regionIndex);
-  const videoSrc = pickVideo(service, regionIndex);
+
   const content = buildContent(svc, regionIndex);
   const nearby = getNearbyRegions(region);
 
@@ -406,18 +416,7 @@ export default async function ServiceRegionPage({
             <PhotoSlot label={`${reg.name} 출장 작업 진행 중`} ratio="4/3" src={photos.onsiteWork} />
             <PhotoSlot label={`${reg.name} 배관 내시경 점검 현장`} ratio="4/3" src={photos.onsiteDiagnosis} />
           </div>
-          <div className="mt-5 overflow-hidden rounded-lg">
-            <video
-              src={videoSrc}
-              className="w-full"
-              preload="none"
-              poster={photos.onsiteWork}
-              muted
-              playsInline
-              controls
-            />
-            <p className="mt-1 text-center text-xs text-gray-400">실제 출장 작업 영상</p>
-          </div>
+
           <div className="mt-5 rounded-lg bg-gray-50 p-5">
             <p className="leading-relaxed text-gray-700">{content.extraNote}</p>
           </div>
