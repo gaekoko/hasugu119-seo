@@ -3,7 +3,7 @@ export const siteConfig = {
   companyName: "하수구 100% 배관케어",
   ceo: "유성훈",
   businessNumber: "374-59-00985",
-  phone: "010-7785-1112",
+  phone: "070-8019-0747",
   baseUrl: "https://info.hasugu119.co.kr",
   blogUrl: "https://blog.naver.com/adh1424",
   mainSiteUrls: {
