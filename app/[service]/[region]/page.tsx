@@ -115,7 +115,7 @@ export async function generateMetadata({
     description,
     // AI 브리핑/스니펫 최적화
     other: {
-      "naver-site-verification": undefined,
+
       "summary": aiSummary,
       "robots": "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1",
       "geo.region": reg.area === "서울특별시" ? "KR-11" : reg.area === "경기·인천" ? "KR-41" : "KR-44",
