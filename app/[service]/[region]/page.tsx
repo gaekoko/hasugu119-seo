@@ -158,6 +158,7 @@ export default async function ServiceRegionPage({
   const slugSalt = region.length; // slug 길이로 ri 주기 충돌 방지
   const content = buildContent(svc, regionIndex, slugSalt);
   const nearby = getNearbyRegions(region);
+  const dongs3 = reg.dongs.slice(0, 3).join("·");
 
   const jsonLd = {
     "@context": "https://schema.org",
