@@ -115,11 +115,11 @@ export async function generateMetadata({
     description,
     // AI 브리핑/스니펫 최적화
     other: {
-      // 네이버 AI 브리핑 최적화
       "naver-site-verification": undefined,
       "summary": aiSummary,
-      // ChatGPT/Gemini 크롤러 허용 (robots.txt와 연동)
       "robots": "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1",
+      "geo.region": reg.area === "서울특별시" ? "KR-11" : reg.area === "경기·인천" ? "KR-41" : "KR-44",
+      "geo.placename": reg.name,
     },
     alternates: { canonical: `${siteConfig.baseUrl}/${service}/${region}` },
     openGraph: {
@@ -132,10 +132,6 @@ export async function generateMetadata({
       type: "website",
     },
     robots: { index: true, follow: true },
-    other: {
-      "geo.region": reg.area === "서울특별시" ? "KR-11" : reg.area === "경기·인천" ? "KR-41" : "KR-44",
-      "geo.placename": reg.name,
-    },
     twitter: {
       card: "summary_large_image",
       title,
