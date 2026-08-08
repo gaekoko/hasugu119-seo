@@ -263,11 +263,13 @@ export default async function ServiceRegionPage({
   };
 
   // WebPage + Speakable Schema - 구글AI·제미나이 최적화
+  const titleForSchema = `${h1} | ${siteConfig.brand}`;
+  const descriptionForSchema = `${reg.name} ${svc.label} 출장 서비스. ${siteConfig.brand} 365일 24시간 운영.`;
   const webPageJsonLd = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    name: title,
-    description,
+    name: titleForSchema,
+    description: descriptionForSchema,
     url: `${siteConfig.baseUrl}/${service}/${region}`,
     inLanguage: "ko",
     dateModified: new Date().toISOString().split("T")[0],
